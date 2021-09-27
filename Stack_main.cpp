@@ -1,67 +1,91 @@
-#include "stdlib.h"
-#include "malloc.h"
-#include "stdio.h"
-#include "string.h"
+#include "Stack.h"
 
 
-
-struct pstack_info
+int dump(struct pstack_info* pstack)
 {
-    const long long golub1 = 11333377;
-    int* pstack_pointer;
-    size_t pstack_size_now;
-    size_t pstack_max_size;
-    const long long golub2 = 11448888;
-};
+    check_nullptr(pstack);
 
-int stack_constructor(struct pstack_info* pstack, size_t pstack_user_size)
-{
-    pstack->pstack_size_now = -1;
-    pstack->pstack_max_size = pstack_user_size;
-    pstack->pstack_pointer = (int*)calloc(pstack_user_size, sizeof(int));
-    return 0;
-}
-
-
-int stack_pushka(struct pstack_info* pstack, int new_element)
-{
-    pstack->pstack_size_now++;
-
-    if ((pstack->pstack_size_now) > pstack->pstack_max_size)
+    if (pstack->pstack_error == ERROR_NULLPTR)
     {
-        pstack->pstack_size_now--;
-        return -1;
+        printf("ERROR_NULLPTR #%d\n", ERROR_NULLPTR);
+        return ERROR_NULLPTR;
+    }
+
+    if  (pstack->pstack_error == ERROR_OUT_RANGE)
+    {
+        printf("ERROR_OUT_OF_RANGE #%d\n", ERROR_OUT_RANGE);
+        return ERROR_OUT_RANGE;
+    }
+
+    if (pstack->pstack_error == ERROR_FULL_STACK);
+    {
+        printf("ARA ARA NEMA SPACE #%d\n", ERROR_FULL_STACK);
+        return ERROR_FULL_STACK;
     }
 
 
-    *(pstack->pstack_pointer) = new_element;
-    pstack->pstack_pointer++;
+
 
     return 0;
 }
 
-int stack_popka(struct pstack_info* pstack)
+
+
+int pstack_resize(struct pstack_info* pstack)
 {
 
 }
 
 
+
+
+int verification(struct pstack_info* pstack)
+{
+    check_nullptr(pstack);
+
+    if (pstack->pstack_pointer == nullptr) return ERROR_NULLPTR;
+
+    if (pstack->pstack_size > pstack->pstack_capacity)
+    {
+        pstack->pstack_error = ERROR_FULL_STACK;
+        return ERROR_FULL_STACK;
+    }
+
+    if (pstack->pstack_size < 0 )
+    {
+        pstack->pstack_error = ERROR_OUT_RANGE;
+        return ERROR_OUT_RANGE;
+    }
+
+    return 0;
+}
+
+
+#define DANYA_ZHOPA  = {}
+
+#define $(value)     printf ("got result: " #value " = %d\n", (value))
+
+#define $kekw        printf ("kekw on %d\n", __LINE__);
+
 int main()
 {
-
     //printf("Input your command:");
 
-    struct pstack_info pstack;
+    struct pstack_info pstack DANYA_ZHOPA;
 
-    int pstack_capacity = 0;
-    printf("Input stack capacity:\n");
-    scanf("%d", &pstack_capacity);
+    int capacity = 0;
+    printf ("Input stack capacity:\n");
+    scanf ("%d", &capacity);
 
-    stack_constructor(&pstack, pstack_capacity);
-    int a1, a2, a3 = 0;
-    scanf("%d %d %d", &a1, &a2, &a3);
-    stack_pushka(&pstack, a1);
-    stack_pushka(&pstack, a2);
-    stack_pushka(&pstack, a3);
-    printf("%d %d %d", *(pstack.pstack_pointer-1), *(pstack.pstack_pointer-2), *(pstack.pstack_pointer-3));
+    stack_constructor (&pstack, capacity);
+    $( pstack.Golub2);
+    $( stack_pushka (&pstack) );
+    $( stack_pushka (&pstack) );
+   // $( stack_pushka (&pstack) );
+
+    $( stack_popka (&pstack) );
+    $( stack_popka (&pstack) );
+    $kekw;
+    //$( stack_popka (&pstack) );
+    $( destructor  (&pstack) );
 }
