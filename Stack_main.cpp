@@ -1,18 +1,14 @@
 #include "Stack.h"
 
-
-int pstack_resize(struct pstack_info* pstack)
-{
-
-
-}
-
-
 #define DANYA_ZHOPA  = {}
 
-#define $(value)     printf ("got result: " #value " = %d\n", (value))
+#define $(value)     { printf ("got result: " #value " = %d", value); printf ("\n"); }
 
 #define $kekw        printf ("kekw on %d\n", __LINE__);
+
+void dump (int value)       { printf ("%d",  value); }
+void dump (double value)    { printf ("%lg", value); }
+void dump (const char* str) { printf ("%s",  str);   }
 
 int main()
 {
@@ -23,15 +19,19 @@ int main()
     int capacity = 0;
     printf ("Input stack capacity:\n");
     scanf ("%d", &capacity);
-
     stack_constructor (&pstack, capacity);
+    //$( destructor  (&pstack) );
+
     //stack_constructor (&pstack, capacity);
 
     $( stack_pushka(&pstack, 5));
+
     $( stack_pushka(&pstack, 7));
-    dump_loud(&pstack, __FILE__, __PRETTY_FUNCTION__);
+
     $( stack_popka(&pstack));
+
     $( stack_popka(&pstack));
+
     //$( stack_popka(&pstack));
 
 
