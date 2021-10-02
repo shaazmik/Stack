@@ -9,7 +9,31 @@
 
 #define FATAL_ERROR assert(0)
 
+
+#define Int_t
+
+
+#ifdef Double_t
+
 typedef double type_array;
+
+#endif
+
+
+#ifdef Int_t
+
+typedef int type_array;
+
+#endif
+
+
+#ifdef Str_t
+
+typedef char* type_array;
+
+#endif
+
+
 
 enum errors
 {
@@ -23,13 +47,15 @@ enum errors
     ERROR_DOUBLE_DESTRUCT = 1337,
     ERROR_WRONG_CAPACITY = 1861,
     WARNING_SIZE_INC = 666,
-    WARNING_SIZE_DEC = 999
+    WARNING_SIZE_DEC = 999,
+    LEFT_CANAREA_DEAD = 0xB1EA,
+    RIGHT_CANAREA_DEAD = 0xB2EA
 };
 
 
 struct pstack_info
 {
-    const long long Golub1 = 11333377;
+    long long Golub_left;
 
     type_array* pstack_pointer;
     int pstack_size;
@@ -42,12 +68,14 @@ struct pstack_info
     long long p_hash = 0;
 
 
-    const long long Golub2 = 11448888;
+    long long Golub_right;
 };
+
 
 
 const int Pstack_inc_max = 3;
 
+static const long long Dog = 0x1ABE;
 
 const int Pstack_multiplier = 2;
 

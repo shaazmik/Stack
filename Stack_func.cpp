@@ -6,19 +6,25 @@ int stack_constructor(struct pstack_info* pstack, size_t pstack_user_size)
     check_nullptr(pstack);
 
     check_construct(pstack);
-
+    pstack->Golub_left = Dog;
+    pstack->Golub_right = Dog;
     pstack->des_status = DES_STATUS_OK;
     pstack->pstack_size = 0;
     pstack->pstack_capacity = pstack_user_size;
     pstack->pstack_error = 0;
     pstack->pstack_pointer = (type_array*)calloc(pstack_user_size * sizeof(type_array) + 2 * sizeof(long long),
                                                  sizeof(char));
-    *pstack->pstack_pointer = pstack->Golub1;
+    *pstack->pstack_pointer = pstack->Golub_left;
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
-    *(pstack->pstack_pointer + pstack_user_size) = pstack->Golub2;
+    *(pstack->pstack_pointer + pstack_user_size) = pstack->Golub_right;
     pstack->pstack_inc = 0;
 
     pstack->con_status++;
+
+    if (verification(pstack))
+    {
+        dump_loud(pstack, __FILE__, __PRETTY_FUNCTION__);
+    }
 
     return OK;
 }

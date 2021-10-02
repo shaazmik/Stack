@@ -1,5 +1,16 @@
 #include "Stack.h"
 
+#ifdef Double_t
+    void dump_top_el (double value)    { printf ("STACK'S TOP ELEMENT  %lg\n", value); }
+#endif
+
+#ifdef Int_t
+    void dump_top_el (int value)       { printf ("STACK'S TOP ELEMENT  %d\n",  value); }
+#endif // Int_t
+
+#ifdef Str_t
+    void dump_top_el (const char* str) { printf ("STACK'S TOP ELEMENT  %s\n",  str);   }
+#endif // Str_t
 
 void check_nullptr(struct pstack_info* pstack)
 {
@@ -22,7 +33,7 @@ void check_construct(struct pstack_info* pstack)
 
     if (pstack->con_status != CON_STATUS_OK)
     {
-        printf("ERROR: check 'log.txt'\n\n");
+        printf("ERROR #%d: check 'log.txt'\n\n", ERROR_DOUBLE_CONSTRUCT);
 
         FILE* log = fopen("log.txt", "a");
         assert(log != nullptr);
@@ -41,7 +52,7 @@ void check_destruct(struct pstack_info* pstack)
 
     if (pstack->des_status != DES_STATUS_OK)
     {
-        printf("ERROR: check 'log.txt'\n\n");
+        printf("ERROR #%d: check 'log.txt'\n\n", ERROR_DOUBLE_DESTRUCT);
 
         FILE* log = fopen("log.txt", "a");
         assert(log != nullptr);
@@ -64,6 +75,12 @@ int verification(struct pstack_info* pstack)
         return ERROR_NULLPTR;
     }
 
+    if (pstack->pstack_capacity < 0)
+    {
+        pstack->pstack_error = ERROR_WRONG_CAPACITY;
+        return ERROR_WRONG_CAPACITY;
+    }
+
     if (pstack->pstack_size > pstack->pstack_capacity)
     {
         pstack->pstack_error = ERROR_FULL_STACK;
@@ -76,7 +93,19 @@ int verification(struct pstack_info* pstack)
         return ERROR_OUT_RANGE;
     }
 
-    return 0;
+    if (pstack->Golub_left != Dog)
+    {
+        pstack->pstack_error = LEFT_CANAREA_DEAD;
+        return LEFT_CANAREA_DEAD;
+    }
+
+    if (pstack->Golub_right != Dog)
+    {
+        pstack->pstack_error = RIGHT_CANAREA_DEAD;
+        return RIGHT_CANAREA_DEAD;
+    }
+
+    return OK;
 }
 
 
@@ -88,34 +117,57 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
     printf("STACK SIZE:          %d\n", pstack->pstack_size);
     if (pstack->pstack_error != ERROR_NULLPTR)
     {
-        printf("STACK'S TOP ELEMENT: %d\n", pstack->pstack_pointer[pstack->pstack_size - 1]);
+        dump_top_el(pstack->pstack_pointer[pstack->pstack_size - 1]);
     }
     else
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    printf("STACK LEFT CANARY:   %d\n", pstack->Golub1);
-    printf("STACK RIGHT CANARY:  %d\n\n", pstack->Golub2);
+    printf("STACK LEFT CANARY:   %d\n", pstack->Golub_left);
+    printf("STACK RIGHT CANARY:  %d\n\n", pstack->Golub_right);
 
     switch(pstack->pstack_error)
     {
         case ERROR_OUT_RANGE:
+            pstack->pstack_error = 0;
             print_err_loud(ERROR_OUT_RANGE, name_of_file, name_of_func, pstack, __LINE__);
             break;
+
+        case ERROR_WRONG_CAPACITY:
+            pstack->pstack_error = 0;
+            print_err_loud(ERROR_WRONG_CAPACITY, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
         case ERROR_FULL_STACK:
+            pstack->pstack_error = 0;
             print_err_loud(ERROR_FULL_STACK, name_of_file, name_of_func, pstack, __LINE__);
             break;
+
         case ERROR_NULLPTR:
+            pstack->pstack_error = 0;
             print_err_loud(ERROR_NULLPTR, name_of_file, name_of_func, pstack, __LINE__);
             break;
+
         case WARNING_SIZE_DEC:
             pstack->pstack_error = 0;
             printf("STACK HAS BEEN DECREASED\n\n");
             break;
+
         case WARNING_SIZE_INC:
             pstack->pstack_error = 0;
             printf("STACK HAS BEEN INCREASED\n\n");
             break;
+
+        case LEFT_CANAREA_DEAD:
+            pstack->pstack_error = 0;
+            print_err_loud(LEFT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
+        case RIGHT_CANAREA_DEAD:
+            pstack->pstack_error = 0;
+            print_err_loud(RIGHT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
         default:
             break;
     }
@@ -130,12 +182,12 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
     FILE* log = fopen("log.txt", "a");
     assert(log != nullptr);
 
+    fprintf(log, "Stack [Error #%d] in  file \"%s\" function \"%s\" dump alerted on \"%d\" line \n",
+                                err_num, name_of_file, name_of_function, line_number );
 
-    fprintf(log, "Stack [Error #%d] in file \"%s\" function \"%s\" dump alerted on \"%d\" line \n",
-            err_num, name_of_file, name_of_function, line_number );
     fprintf(log, "\n\nSTACK CAPACITY:%d\n", pstack->pstack_capacity);
     fprintf(log, "STACK SIZE:%d\n", pstack->pstack_size);
-    if (pstack->pstack_error != ERROR_NULLPTR)
+    if (err_num != ERROR_NULLPTR)
     {
         fprintf(log, "STACK'S TOP ELEMENT: %d\n", pstack->pstack_pointer[pstack->pstack_size - 1]);
     }
@@ -143,8 +195,8 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
     {
         fprintf(log, "STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    fprintf(log, "STACK LEFT CANARY:%d\n", pstack->Golub1);
-    fprintf(log, "STACK RIGHT CANARY:%d\n\n", pstack->Golub2);
+    fprintf(log, "STACK LEFT CANARY:%d\n", pstack->Golub_left);
+    fprintf(log, "STACK RIGHT CANARY:%d\n\n", pstack->Golub_right);
 
     fflush(log);
 
