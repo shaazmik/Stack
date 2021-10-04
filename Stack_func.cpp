@@ -1,25 +1,52 @@
 #include "Stack.h"
 
 
-int stack_constructor(struct pstack_info* pstack, size_t pstack_user_size)
+int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
 {
     check_nullptr(pstack);
 
     check_construct(pstack);
-    pstack->Golub_left = Dog;
+
+    if (pstack_user_size < 0)
+    {
+        printf("Negative value, take the number module\n\n");
+        pstack_user_size = abs(pstack_user_size);
+    }
+
+    pstack->Golub_left  = Dog;
     pstack->Golub_right = Dog;
-    pstack->des_status = DES_STATUS_OK;
+
+    pstack->des_status  = DES_STATUS_OK;
+
     pstack->pstack_size = 0;
     pstack->pstack_capacity = pstack_user_size;
+
     pstack->pstack_error = 0;
-    pstack->pstack_pointer = (type_array*)calloc(pstack_user_size * sizeof(type_array) + 2 * sizeof(long long),
-                                                 sizeof(char));
-    *pstack->pstack_pointer = pstack->Golub_left;
-    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
-    *(pstack->pstack_pointer + pstack_user_size) = pstack->Golub_right;
     pstack->pstack_inc = 0;
 
-    pstack->con_status++;
+    pstack->pstack_pointer = (type_array*)calloc(pstack->pstack_capacity * sizeof(type_array) + 2 * sizeof(long long),
+                                                 sizeof(char));
+
+    if (check_memory(pstack->pstack_pointer))
+    {
+        printf("SIZE ERROR: TOO MUCH REQUESTED MEMORY\n"
+               "DEFAULT SIZE OF STACK:%d\n\n ", Default_size_of_pstack);
+
+        pstack->pstack_capacity = Default_size_of_pstack;
+
+        free(pstack->pstack_pointer);
+
+        pstack->pstack_pointer = (type_array*)calloc(pstack->pstack_capacity * sizeof(type_array) + 2 * sizeof(long long),
+                                                 sizeof(char));
+    }
+
+    *pstack->pstack_pointer = pstack->Golub_left;
+
+    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
+
+    *(pstack->pstack_pointer + pstack_user_size) = pstack->Golub_right;
+
+    pstack->con_status = STACK_IS_CONSTURCTED;
 
     if (verification(pstack))
     {
@@ -35,8 +62,10 @@ int pstack_resizemo(struct pstack_info* pstack)
     pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
                                                    pstack->pstack_capacity * sizeof(type_array)
                                                    + 2 * sizeof(long long) );
+    // realloc
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
     pstack->inc_counter++;
+
     return WARNING_SIZE_INC;
 }
 
@@ -47,6 +76,7 @@ int pstack_resizele(struct pstack_info* pstack)
     pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
                                                    pstack->pstack_capacity * sizeof(type_array)
                                                    + 2 * sizeof(long long) );
+    // realloc
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
     pstack->inc_counter--;
 
@@ -113,7 +143,6 @@ type_array stack_popka(struct pstack_info* pstack)
 
     return pop_result;
 }
-
 
 
 int destructor(struct pstack_info* pstack)

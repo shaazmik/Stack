@@ -18,12 +18,14 @@ int main()
 {
     //printf("Input your command:");
 
-    struct pstack_info pstack {};
+    struct pstack_info pstack = {};
 
     int capacity = 0;
     printf ("Input stack capacity:\n");
     scanf ("%d", &capacity);
     stack_constructor (&pstack, capacity);
+    //stack_constructor (&pstack, capacity);
+
     //$( destructor  (&pstack) );
 
     //stack_constructor (&pstack, capacity);
@@ -38,8 +40,9 @@ int main()
 
     dump_pop( stack_popka(&pstack) );
 
-    //$( stack_popka(&pstack));
+   // dump_pop( stack_popka(&pstack) );
 
+    //вывод даты
 
     $( destructor  (&pstack) );
 
