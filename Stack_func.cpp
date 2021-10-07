@@ -72,32 +72,6 @@ int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
     return OK;
 }
 
-int pstack_resizemo(struct pstack_info* pstack)
-{
-    pstack->pstack_capacity += Pstack_multiplier;
-    pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
-                                                   pstack->pstack_capacity * sizeof(type_array)
-                                                   + 2 * sizeof(long long) );
-    check_memory(pstack->pstack_pointer - 1 * sizeof(long long));
-    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
-    pstack->inc_counter++;
-
-    return WARNING_SIZE_INC;
-}
-
-
-int pstack_resizele(struct pstack_info* pstack)
-{
-    pstack->pstack_capacity -= Pstack_multiplier;
-    pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
-                                                   pstack->pstack_capacity * sizeof(type_array)
-                                                   + 2 * sizeof(long long) );
-    check_memory(pstack->pstack_pointer - 1 * sizeof(long long));
-    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
-    pstack->inc_counter--;
-
-    return WARNING_SIZE_DEC;
-}
 
 void print_stack(struct pstack_info* pstack)
 {
@@ -170,6 +144,60 @@ type_array stack_popka(struct pstack_info* pstack)
     return pop_result;
 }
 
+
+int pstack_resizemo(struct pstack_info* pstack)
+{
+    pstack->pstack_capacity += Pstack_multiplier;
+
+    type_array* temp_pointer;
+
+    temp_pointer = pstack->pstack_pointer;
+
+    pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
+                                                   pstack->pstack_capacity * sizeof(type_array)
+                                                   + 2 * sizeof(long long) );
+
+    if (pstack->pstack_pointer == nullptr)
+    {
+        pstack->pstack_pointer = temp_pointer;
+
+        printf("ERROR REALLOCATION, EXTENSION FAILED\n\n");
+        return ERROR_MEMORY_RESIZE_FAILED;
+    }
+
+    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
+
+    pstack->inc_counter++;
+
+    return WARNING_SIZE_INC;
+}
+
+
+int pstack_resizele(struct pstack_info* pstack)
+{
+    pstack->pstack_capacity -= Pstack_multiplier;
+
+    type_array* temp_pointer;
+
+    temp_pointer = pstack->pstack_pointer;
+
+    pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
+                                                   pstack->pstack_capacity * sizeof(type_array)
+                                                   + 2 * sizeof(long long) );
+    if (pstack->pstack_pointer == nullptr)
+    {
+        pstack->pstack_pointer = temp_pointer;
+
+        printf("ERROR REALLOCATION, EXTENSION FAILED\n\n");
+        return ERROR_MEMORY_RESIZE_FAILED;
+    }
+
+    pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
+
+    pstack->inc_counter--;
+
+    return WARNING_SIZE_DEC;
+}
 
 int stack_destructor(struct pstack_info* pstack)
 {

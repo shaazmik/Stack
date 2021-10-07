@@ -10,9 +10,69 @@
 
 #define FATAL_ERROR assert(0)
 
+//========================================
+
+//!*
+
+#define DEBUG_MOD
+
+//!*
+
+//========================================
+
+#ifdef DEBUG_MOD
+
+#define dump(value) dump_loud(value, __FILE__, __PRETTY_FUNCTION__);
+
+#define verification_stack(value) if (verification(value))                                \
+                                   {                                                      \
+                                       dump(value);                                       \
+                                   }
+
+
+#define standart_command(value) if (value)                                                \
+                        {                                                                 \
+                          printf("Program ended.");                                       \
+                          return ERROR_UNKNOWN;                                           \
+                        }                                                                 \
+
+
+#endif // DEBUG_MOD
+
+
+//========================================
+
+
+#ifndef DEBUG_MOD
+
+#define dump(value) dump_whisper(value);
+
+#define verification_stack(value) if (verification(value))   \
+                                  {                          \
+                                      dump(value);           \
+                                      return ERROR_UNKNOWN;  \
+                                  }                          \
+
+
+#define standart_command(value) if (value)                   \
+                        {                                    \
+                          printf("Program ended.\n");          \
+                          return ERROR_UNKNOWN;              \
+                        }                                    \
+
+
+#endif // DEBUG_MOD
+
+
+
+
+//========================================
+
+//!**
 
 #define Double_t
 
+//========================================
 
 #ifdef Double_t
 
@@ -20,6 +80,7 @@ typedef double type_array;
 
 #endif
 
+//========================================
 
 #ifdef Int_t
 
@@ -28,13 +89,15 @@ typedef int type_array;
 #endif
 
 
+//========================================
+
 #ifdef Str_t
 
 typedef char* type_array;
 
 #endif
 
-
+//========================================
 
 enum errors
 {
@@ -52,8 +115,12 @@ enum errors
     WARNING_SIZE_DEC = 999,
     LEFT_CANAREA_DEAD = 0xB1EA,
     RIGHT_CANAREA_DEAD = 0xB2EA,
-    ERROR_MEMORY_RESIZE_FAILED = 0xBABADED
+    ERROR_MEMORY_RESIZE_FAILED = 0xBABADED,
+    ERROR_UNKNOWN = 0xDEADFAAC
 };
+
+
+//========================================
 
 
 struct pstack_info
@@ -75,6 +142,7 @@ struct pstack_info
     long long Golub_right;
 };
 
+//========================================
 
 
 const int Pstack_inc_max = 3;
@@ -86,10 +154,13 @@ const int Pstack_multiplier = 2;
 const int Default_size_of_pstack = 100;
 
 
+//========================================
+
+
 int stack_constructor(struct pstack_info* pstack, int pstack_user_size);
 
 
-void check_construct(struct pstack_info* pstack);
+int check_construct(struct pstack_info* pstack);
 
 
 int check_memory(type_array* data);
@@ -116,13 +187,22 @@ int pstack_resizele(struct pstack_info* pstack);
 int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* name_of_function);
 
 
+int dump_whisper(struct pstack_info* pstack);
+
+
+void print_stack(struct pstack_info* pstack);
+
+
+void fprint_stack(struct pstack_info* pstack, FILE* log);
+
+
 void print_err_loud(int err_num, const char* name_of_file, const char* name_of_function, pstack_info* pstack, int line_number);
 
 
-int destructor(struct pstack_info* pstack);
+int stack_destructor(struct pstack_info* pstack);
 
 
-void check_destruct(struct pstack_info* pstack);
+int check_destruct(struct pstack_info* pstack);
 
 
 #endif // STACK_H
