@@ -24,6 +24,7 @@ void check_nullptr(struct pstack_info* pstack)
             fflush(log);
 
             FATAL_ERROR;
+
     }
 }
 
@@ -37,13 +38,13 @@ int check_memory(type_array* data)
 }
 
 
-void check_construct(struct pstack_info* pstack)
+int check_construct(struct pstack_info* pstack)
 {
     check_nullptr(pstack);
 
     if (pstack->con_status != CON_STATUS_OK)
     {
-        printf("ERROR #%d: check 'log.txt'\n\n", ERROR_DOUBLE_CONSTRUCT);
+        printf("\nERROR #%d: check 'log.txt'\n\n", ERROR_DOUBLE_CONSTRUCT);
 
         FILE* log = fopen("log.txt", "a");
         assert(log != nullptr);
@@ -52,14 +53,24 @@ void check_construct(struct pstack_info* pstack)
 
         fflush(log);
 
+        #ifdef DEBUG_MOD
+
         FATAL_ERROR;
+
+        #endif // DEBUG_MOD
+
+        #ifndef DEBUG_MOD
+
+        return ERROR_UNKNOWN;
+
+        #endif // DEBUG_MOD
     }
 }
 
 
 
 
-void check_destruct(struct pstack_info* pstack)
+int check_destruct(struct pstack_info* pstack)
 {
     check_nullptr(pstack);
 
@@ -74,7 +85,17 @@ void check_destruct(struct pstack_info* pstack)
 
         fflush(log);
 
+        #ifdef DEBUG_MOD
+
         FATAL_ERROR;
+
+        #endif // DEBUG_MOD
+
+        #ifndef DEBUG_MOD
+
+        return ERROR_UNKNOWN;
+
+        #endif // DEBUG_MOD
     }
 }
 
@@ -118,11 +139,45 @@ int verification(struct pstack_info* pstack)
         return RIGHT_CANAREA_DEAD;
     }
 
-    // Canary array
-
     return OK;
 }
 
+
+int dump_whisper(struct pstack_info* pstack)
+{
+    check_nullptr(pstack);
+
+    if (pstack->pstack_error == WARNING_SIZE_INC)
+    {
+        printf("\nWARNING STACK SIZE INCREASED\n");
+    }
+
+    if (pstack->pstack_error == WARNING_SIZE_DEC)
+    {
+        printf("\nWARNING STACK SIZE DECREASED\n");
+    }
+
+    printf("\n\n"
+           "STACK CAPACITY:      %d\n"
+           "STACK SIZE:          %d\n", pstack->pstack_capacity, pstack->pstack_size);
+
+    if (pstack->pstack_error != ERROR_NULLPTR)
+    {
+        dump_top_el(pstack->pstack_pointer[pstack->pstack_size - 1]);
+        print_stack(pstack);
+    }
+    else
+    {
+        printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
+    }
+    printf("STACK LEFT CANARY:   %ld\n",   pstack->Golub_left);
+    printf("STACK RIGHT CANARY:  %ld\n\n",   pstack->Golub_right);
+
+    if (pstack->pstack_error != OK && pstack->pstack_error != WARNING_SIZE_INC && pstack->pstack_error != WARNING_SIZE_DEC)
+    {
+        printf("SOMETHING WENT WRONG, TURN ON DEBUG MODE\n\n");
+    }
+}
 
 int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* name_of_func)
 {
@@ -132,16 +187,17 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
            "STACK CAPACITY:      %d\n"
            "STACK SIZE:          %d\n", pstack->pstack_capacity, pstack->pstack_size);
 
-    if (pstack->pstack_error != ERROR_NULLPTR)
+    if (pstack->pstack_error != ERROR_NULLPTR && pstack->pstack_error != ERROR_OUT_RANGE)
     {
         dump_top_el(pstack->pstack_pointer[pstack->pstack_size - 1]);
+        print_stack(pstack);
     }
     else
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
     printf("STACK LEFT CANARY:   %ld\n",   pstack->Golub_left);
-    printf("STACK RIGHT CANARY:  %ld\n\n", pstack->Golub_right);
+    printf("STACK RIGHT CANARY:  %ld\n", pstack->Golub_right);
 
     switch(pstack->pstack_error)
     {
@@ -204,9 +260,10 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
 
     fprintf(log, "\n\nSTACK CAPACITY: %d\n", pstack->pstack_capacity);
     fprintf(log, "STACK SIZE: %d\n", pstack->pstack_size);
-    if (err_num != ERROR_NULLPTR)
+    if (err_num != ERROR_NULLPTR && err_num != ERROR_OUT_RANGE)
     {
         fprintf(log, "STACK'S TOP ELEMENT: %d\n", pstack->pstack_pointer[pstack->pstack_size - 1]);
+        fprint_stack(pstack, log);
     }
     else
     {
@@ -214,6 +271,7 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
     }
     fprintf(log, "STACK LEFT CANARY: %d\n", pstack->Golub_left);
     fprintf(log, "STACK RIGHT CANARY: %d\n\n", pstack->Golub_right);
+
 
     fflush(log);
 

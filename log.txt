@@ -1,0 +1,9 @@
+Stack [Error #1488] in  file "C:\Users\Daniil\Documents\Stack\Stack_func.cpp" function "type_array stack_popka(pstack_info*)" dump alerted on "206" line 
+
+
+STACK CAPACITY: 2
+STACK SIZE: -1
+STACK HASN'T TOP ELEMENT : NULLPTR
+STACK LEFT CANARY: 6846
+STACK RIGHT CANARY: 6846
+
