@@ -38,6 +38,54 @@ int check_memory(type_array* data)
 }
 
 
+
+static long long rotl (long long n)
+{
+    unsigned d = 13;
+    n *= d;
+     return (n << d)|(n >> (32 - d));
+}
+
+long long hash_calc (struct pstack_info* pstack)
+{
+
+    check_nullptr(pstack);
+
+    long long phash = 0x1488;
+
+    phash ^= rotl (pstack->golub_left);
+    phash ^= rotl (pstack->pstack_error);
+    phash ^= rotl (pstack->pstack_size);
+    phash ^= rotl (pstack->pstack_capacity);
+    phash ^= rotl (pstack->con_status);
+    phash ^= rotl (pstack->des_status);
+    phash ^= rotl (pstack->inc_counter);
+
+
+    if (pstack->pstack_pointer != nullptr)
+    {
+        phash ^= *((long long*)((char*)pstack->pstack_pointer - 1 * sizeof (long long)));
+        phash ^= *((long long*)(pstack->pstack_pointer + pstack->pstack_capacity));
+    }
+
+    if (pstack->pstack_size > 0 && pstack->pstack_pointer != nullptr)
+        for (int i = 0; i < pstack->pstack_size; ++i)
+            phash ^= rotl (*(pstack->pstack_pointer + i));
+
+
+    phash ^= rotl (pstack->golub_right);
+
+
+    phash ^= (phash >> 16);
+    phash *= 0x85ebca6b;
+    phash ^= (phash >> 13);
+    phash *= 0xc2b2ae35;
+    phash ^= (phash >> 16);
+
+    return phash % (16 * 16 * 16 * 16 * 16 * 16);
+}
+
+
 int check_construct(struct pstack_info* pstack)
 {
     check_nullptr(pstack);
@@ -109,6 +157,7 @@ int verification(struct pstack_info* pstack)
         return ERROR_NULLPTR;
     }
 
+
     if (pstack->pstack_capacity < 0)
     {
         pstack->pstack_error = ERROR_WRONG_CAPACITY;
@@ -127,23 +176,29 @@ int verification(struct pstack_info* pstack)
         return ERROR_OUT_RANGE;
     }
 
-    if (pstack->Golub_left != Dog)
+    if (pstack->golub_left != Dog)
     {
         pstack->pstack_error = LEFT_CANAREA_DEAD;
         return LEFT_CANAREA_DEAD;
     }
 
-    if (pstack->Golub_right != Dog)
+    if (pstack->golub_right != Dog)
     {
         pstack->pstack_error = RIGHT_CANAREA_DEAD;
         return RIGHT_CANAREA_DEAD;
+    }
+
+    if (hash_calc(pstack) != pstack->hash_var)
+    {
+        pstack->pstack_error = ERROR_WRONG_HASH;
+        return ERROR_WRONG_HASH;
     }
 
     return OK;
 }
 
 
-int dump_whisper(struct pstack_info* pstack)
+void dump_whisper(struct pstack_info* pstack)
 {
     check_nullptr(pstack);
 
@@ -155,6 +210,11 @@ int dump_whisper(struct pstack_info* pstack)
     if (pstack->pstack_error == WARNING_SIZE_DEC)
     {
         printf("\nWARNING STACK SIZE DECREASED\n");
+    }
+
+    if (pstack->pstack_error == ERROR_OUT_RANGE)
+    {
+        pstack->pstack_size++;
     }
 
     printf("\n\n"
@@ -170,8 +230,13 @@ int dump_whisper(struct pstack_info* pstack)
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    printf("STACK LEFT CANARY:   %ld\n",   pstack->Golub_left);
-    printf("STACK RIGHT CANARY:  %ld\n\n",   pstack->Golub_right);
+    printf("STACK LEFT CANARY:   %ld\n",     pstack->golub_left);
+    printf("STACK RIGHT CANARY:  %ld\n\n",   pstack->golub_right);
+
+    if (pstack->pstack_error == ERROR_WRONG_HASH)
+    {
+        printf("WRONG HASH, DATA LOST, PLEASE TURN ON DEBUG MODE\n\n");
+    }
 
     if (pstack->pstack_error != OK && pstack->pstack_error != WARNING_SIZE_INC && pstack->pstack_error != WARNING_SIZE_DEC)
     {
@@ -196,8 +261,10 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    printf("STACK LEFT CANARY:   %ld\n",   pstack->Golub_left);
-    printf("STACK RIGHT CANARY:  %ld\n", pstack->Golub_right);
+    printf("STACK LEFT CANARY:   %ld\n",   pstack->golub_left);
+    printf("STACK RIGHT CANARY:  %ld\n",   pstack->golub_right);
+    printf("STACK HASH:          %ld\n",   pstack->hash_var);
+
 
     switch(pstack->pstack_error)
     {
@@ -241,6 +308,11 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
             print_err_loud(RIGHT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
             break;
 
+        case ERROR_WRONG_HASH:
+            pstack->pstack_error = 0;
+            print_err_loud(ERROR_WRONG_HASH, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
         default:
             break;
     }
@@ -260,6 +332,7 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
 
     fprintf(log, "\n\nSTACK CAPACITY: %d\n", pstack->pstack_capacity);
     fprintf(log, "STACK SIZE: %d\n", pstack->pstack_size);
+
     if (err_num != ERROR_NULLPTR && err_num != ERROR_OUT_RANGE)
     {
         fprintf(log, "STACK'S TOP ELEMENT: %d\n", pstack->pstack_pointer[pstack->pstack_size - 1]);
@@ -269,8 +342,10 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
     {
         fprintf(log, "STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    fprintf(log, "STACK LEFT CANARY: %d\n", pstack->Golub_left);
-    fprintf(log, "STACK RIGHT CANARY: %d\n\n", pstack->Golub_right);
+
+    fprintf(log, "STACK LEFT CANARY:   %d\n",    pstack->golub_left);
+    fprintf(log, "STACK RIGHT CANARY:  %d\n\n",  pstack->golub_right);
+    fprintf(log, "STACK HASH:          %ld\n",   pstack->hash_var);
 
 
     fflush(log);

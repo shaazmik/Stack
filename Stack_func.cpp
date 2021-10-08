@@ -32,8 +32,8 @@ int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
         pstack_user_size = abs(pstack_user_size);
     }
 
-    pstack->Golub_left  = Dog;
-    pstack->Golub_right = Dog;
+    pstack->golub_left  = Dog;
+    pstack->golub_right = Dog;
 
     pstack->des_status  = DES_STATUS_OK;
 
@@ -41,7 +41,6 @@ int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
     pstack->pstack_capacity = pstack_user_size;
 
     pstack->pstack_error = 0;
-    pstack->pstack_inc = 0;
 
     pstack->pstack_pointer = (type_array*)calloc(pstack->pstack_capacity * sizeof(type_array) + 2 * sizeof(long long),
                                                  sizeof(char));
@@ -59,13 +58,15 @@ int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
                                                  sizeof(char));
     }
 
-    *pstack->pstack_pointer = pstack->Golub_left;
+    *pstack->pstack_pointer = pstack->golub_left;
 
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
 
-    *(pstack->pstack_pointer + pstack->pstack_capacity) = pstack->Golub_right;
+    *(pstack->pstack_pointer + pstack->pstack_capacity) = pstack->golub_right;
 
     pstack->con_status = STACK_IS_CONSTURCTED;
+
+    pstack->hash_var = hash_calc(pstack);
 
     verification_stack(pstack);
 
@@ -106,7 +107,7 @@ int stack_pushka(struct pstack_info* pstack, type_array new_element)
         pstack->pstack_error = pstack_resizemo(pstack);
         pstack->pstack_pointer[pstack->pstack_size] = new_element;
         pstack->pstack_size++;
-        dump(pstack);
+        dump_stack(pstack);
     }
     else
     {
@@ -114,6 +115,7 @@ int stack_pushka(struct pstack_info* pstack, type_array new_element)
         pstack->pstack_size++;
     }
 
+    pstack->hash_var = hash_calc(pstack);
 
     verification_stack(pstack);
 
@@ -131,13 +133,16 @@ type_array stack_popka(struct pstack_info* pstack)
     type_array pop_result = 0;
     pop_result = pstack->pstack_pointer[pstack->pstack_size];
 
+    pstack->hash_var = hash_calc(pstack);
+
 
     verification_stack(pstack);
 
     if ( (pstack->pstack_size == pstack->pstack_capacity - 2 * Pstack_multiplier) && (pstack->inc_counter > 1))
     {
         pstack->pstack_error = pstack_resizele(pstack);
-        dump(pstack);
+        pstack->hash_var = hash_calc(pstack);
+        dump_stack(pstack);
     }
 
 

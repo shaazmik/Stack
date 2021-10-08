@@ -25,16 +25,12 @@ int main()
     scanf ("%d", &capacity);
 
     standart_command(stack_constructor(&pstack, capacity));
+    //standart_command(stack_constructor(&pstack, capacity));
+
     stack_pushka(&pstack, 123);
     stack_pushka(&pstack, 124);
     stack_pushka(&pstack, 125);
-    stack_pushka(&pstack, 126);
-    stack_pushka(&pstack, 127);
-    stack_pushka(&pstack, 128);
-    stack_pushka(&pstack, 129);
-    dump_pop(stack_popka(&pstack));
-    dump_pop(stack_popka(&pstack));
-    dump_pop(stack_popka(&pstack));
+
     dump_pop(stack_popka(&pstack));
     dump_pop(stack_popka(&pstack));
     dump_pop(stack_popka(&pstack));
