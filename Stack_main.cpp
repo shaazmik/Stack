@@ -16,7 +16,6 @@
 
 int main()
 {
-    //printf("Input your command:");
 
     struct pstack_info pstack = {};
 
@@ -25,10 +24,10 @@ int main()
     scanf ("%d", &capacity);
 
     standart_command(stack_constructor(&pstack, capacity));
-    //standart_command(stack_constructor(&pstack, capacity));
 
     stack_pushka(&pstack, 123);
     stack_pushka(&pstack, 124);
+
     stack_pushka(&pstack, 125);
 
     dump_pop(stack_popka(&pstack));

@@ -8,7 +8,11 @@
 #include <assert.h>
 #include <string.h>
 
+//========================================
+
 #define FATAL_ERROR assert(0)
+
+#define stack_name(value) #value
 
 //========================================
 
@@ -26,7 +30,7 @@
 
 #define verification_stack(value) if (verification(value))                                \
                                    {                                                      \
-                                       dump_stack(value);                                \
+                                       dump_stack(value);                                 \
                                    }
 
 
@@ -137,6 +141,7 @@ struct pstack_info
     size_t con_status  = CON_STATUS_OK;
     size_t des_status;
     size_t inc_counter = 1;
+    char* name_of_stack;
 
     long long hash_var;
 
