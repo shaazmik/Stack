@@ -28,13 +28,12 @@ int main()
     stack_pushka(&pstack, 123);
     stack_pushka(&pstack, 124);
 
-    stack_pushka(&pstack, 125);
+    stack_pushka(&pstack, 44);
 
     dump_pop(stack_popka(&pstack));
     dump_pop(stack_popka(&pstack));
-    dump_pop(stack_popka(&pstack));
-
     standart_command(stack_destructor(&pstack));
+
 
     return OK;
 }

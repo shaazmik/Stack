@@ -52,17 +52,15 @@ int stack_constructor(struct pstack_info* pstack, int pstack_user_size)
 
         pstack->pstack_capacity = Default_size_of_pstack;
 
-        free(pstack->pstack_pointer);
-
         pstack->pstack_pointer = (type_array*)calloc(pstack->pstack_capacity * sizeof(type_array) + 2 * sizeof(long long),
                                                  sizeof(char));
     }
 
-    *pstack->pstack_pointer = pstack->golub_left;
+    *( (long long*) (pstack->pstack_pointer) ) = pstack->golub_left;
 
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
 
-    *(pstack->pstack_pointer + pstack->pstack_capacity) = pstack->golub_right;
+    *( (long long*) (pstack->pstack_pointer + pstack->pstack_capacity) ) = pstack->golub_right;
 
     pstack->con_status = STACK_IS_CONSTURCTED;
 
@@ -130,8 +128,7 @@ type_array stack_popka(struct pstack_info* pstack)
     verification_stack(pstack);
 
     pstack->pstack_size--;
-    type_array pop_result = 0;
-    pop_result = pstack->pstack_pointer[pstack->pstack_size];
+    type_array pop_result = pstack->pstack_pointer[pstack->pstack_size];
 
     pstack->hash_var = hash_calc(pstack);
 
@@ -152,11 +149,11 @@ type_array stack_popka(struct pstack_info* pstack)
 
 int pstack_resizemo(struct pstack_info* pstack)
 {
+    *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity) = 0;
+
     pstack->pstack_capacity += Pstack_multiplier;
 
-    type_array* temp_pointer;
-
-    temp_pointer = pstack->pstack_pointer;
+    type_array* temp_pointer = pstack->pstack_pointer;
 
     pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
                                                    pstack->pstack_capacity * sizeof(type_array)
@@ -171,6 +168,8 @@ int pstack_resizemo(struct pstack_info* pstack)
     }
 
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
+
+    *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity) = Dog;
 
     pstack->inc_counter++;
 
@@ -180,11 +179,11 @@ int pstack_resizemo(struct pstack_info* pstack)
 
 int pstack_resizele(struct pstack_info* pstack)
 {
+    *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity) = 0;
+
     pstack->pstack_capacity -= Pstack_multiplier;
 
-    type_array* temp_pointer;
-
-    temp_pointer = pstack->pstack_pointer;
+    type_array* temp_pointer = pstack->pstack_pointer;
 
     pstack->pstack_pointer = (type_array*)realloc( (char*)pstack->pstack_pointer - 1 * sizeof(long long),
                                                    pstack->pstack_capacity * sizeof(type_array)
@@ -198,6 +197,9 @@ int pstack_resizele(struct pstack_info* pstack)
     }
 
     pstack->pstack_pointer = (type_array*)((char*)pstack->pstack_pointer + 1 * sizeof(long long));
+
+    *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity) = Dog;
+
 
     pstack->inc_counter--;
 
@@ -214,7 +216,6 @@ int stack_destructor(struct pstack_info* pstack)
     }
 
     free((char*)pstack->pstack_pointer - 1 * sizeof(long long));
-    pstack->pstack_pointer = pstack->pstack_pointer - 1 * sizeof(long long);
     pstack->pstack_pointer = nullptr;
     pstack->pstack_size = 0;
     pstack->pstack_error = 0;

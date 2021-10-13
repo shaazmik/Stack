@@ -43,7 +43,7 @@ static long long rotl (long long n)
 {
     unsigned d = 13;
     n *= d;
-     return (n << d)|(n >> (32 - d));
+    return (n << d)|(n >> (32 - d));
 }
 
 long long hash_calc (struct pstack_info* pstack)
@@ -82,7 +82,7 @@ long long hash_calc (struct pstack_info* pstack)
     phash *= 0xc2b2ae35;
     phash ^= (phash >> 16);
 
-    return phash % (16 * 16 * 16 * 16 * 16 * 16);
+    return phash;
 }
 
 
@@ -178,14 +178,26 @@ int verification(struct pstack_info* pstack)
 
     if (pstack->golub_left != Dog)
     {
-        pstack->pstack_error = LEFT_CANAREA_DEAD;
-        return LEFT_CANAREA_DEAD;
+        pstack->pstack_error = LEFT_STRUCT_CANAREA_DEAD;
+        return LEFT_STRUCT_CANAREA_DEAD;
     }
 
     if (pstack->golub_right != Dog)
     {
-        pstack->pstack_error = RIGHT_CANAREA_DEAD;
-        return RIGHT_CANAREA_DEAD;
+        pstack->pstack_error = RIGHT_STRUCT_CANAREA_DEAD;
+        return RIGHT_STRUCT_CANAREA_DEAD;
+    }
+
+    if ( *(long long*)( (char*)pstack->pstack_pointer - sizeof(long long) ) != Dog )
+    {
+        pstack->pstack_error = LEFT_STACK_CANAREA_DEAD;
+        return LEFT_STACK_CANAREA_DEAD;
+    }
+
+    if ( *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity) != Dog )
+    {
+        pstack->pstack_error = RIGHT_STACK_CANAREA_DEAD;
+        return RIGHT_STACK_CANAREA_DEAD;
     }
 
     if (hash_calc(pstack) != pstack->hash_var)
@@ -230,8 +242,6 @@ void dump_whisper(struct pstack_info* pstack)
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    printf("STACK LEFT CANARY:   %ld\n",     pstack->golub_left);
-    printf("STACK RIGHT CANARY:  %ld\n\n",   pstack->golub_right);
 
     if (pstack->pstack_error == ERROR_WRONG_HASH)
     {
@@ -261,9 +271,16 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
     {
         printf("STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
-    printf("STACK LEFT CANARY:   %ld\n",   pstack->golub_left);
-    printf("STACK RIGHT CANARY:  %ld\n",   pstack->golub_right);
-    printf("STACK HASH:          %ld\n",   pstack->hash_var);
+    printf("STACK STRUCT LEFT CANARY:   %ld\n",   pstack->golub_left);
+    printf("STACK STRUCT RIGHT CANARY:  %ld\n",   pstack->golub_right);
+
+    printf("STACK LEFT CANARY:          %ld\n",
+           *(long long*)( (char*)pstack->pstack_pointer - sizeof(long long) ) );
+
+    printf("STACK RIGHT CANARY:         %ld\n",
+           *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity )  );
+
+    printf("STACK HASH:                 %ld\n\n",   pstack->hash_var);
 
 
     switch(pstack->pstack_error)
@@ -298,14 +315,24 @@ int dump_loud(struct pstack_info* pstack, const char* name_of_file, const char* 
             printf("STACK HAS BEEN INCREASED\n\n");
             break;
 
-        case LEFT_CANAREA_DEAD:
+        case LEFT_STRUCT_CANAREA_DEAD:
             pstack->pstack_error = 0;
-            print_err_loud(LEFT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            print_err_loud(LEFT_STRUCT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
             break;
 
-        case RIGHT_CANAREA_DEAD:
+        case RIGHT_STRUCT_CANAREA_DEAD:
             pstack->pstack_error = 0;
-            print_err_loud(RIGHT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            print_err_loud(RIGHT_STRUCT_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
+        case LEFT_STACK_CANAREA_DEAD:
+            pstack->pstack_error = 0;
+            print_err_loud(LEFT_STACK_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
+            break;
+
+        case RIGHT_STACK_CANAREA_DEAD:
+            pstack->pstack_error = 0;
+            print_err_loud(RIGHT_STACK_CANAREA_DEAD, name_of_file, name_of_func, pstack, __LINE__);
             break;
 
         case ERROR_WRONG_HASH:
@@ -343,9 +370,16 @@ void print_err_loud(int err_num, const char* name_of_file, const char* name_of_f
         fprintf(log, "STACK HASN'T TOP ELEMENT : NULLPTR\n");
     }
 
-    fprintf(log, "STACK LEFT CANARY:   %d\n",    pstack->golub_left);
-    fprintf(log, "STACK RIGHT CANARY:  %d\n\n",  pstack->golub_right);
-    fprintf(log, "STACK HASH:          %ld\n",   pstack->hash_var);
+    fprintf(log, "STACK STRUCT LEFT CANARY:   %d\n",    pstack->golub_left);
+    fprintf(log, "STACK STRUCT RIGHT CANARY:  %d\n",  pstack->golub_right);
+
+    fprintf(log, "STACK LEFT CANARY:          %ld\n",
+           *(long long*)( (char*)pstack->pstack_pointer - sizeof(long long) ) );
+
+    fprintf(log, "STACK RIGHT CANARY:         %ld\n",
+           *(long long*)( (char*)pstack->pstack_pointer + sizeof(type_array) * pstack->pstack_capacity )  );
+
+    fprintf(log, "STACK HASH:                 %ld\n\n",   pstack->hash_var);
 
 
     fflush(log);

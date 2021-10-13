@@ -18,7 +18,7 @@
 
 //!*
 
-#define DEBUG_MOD
+//#define DEBUG_MOD
 
 //!*
 
@@ -56,14 +56,14 @@
                                   {                          \
                                       dump_stack(value);     \
                                       return ERROR_UNKNOWN;  \
-                                  }                          \
+                                  }
 
 
 #define standart_command(value) if (value)                   \
-                        {                                    \
-                          printf("Program ended.\n");        \
-                          return ERROR_UNKNOWN;              \
-                        }                                    \
+                                {                            \
+                                  printf("Program ended.\n");\
+                                  return ERROR_UNKNOWN;      \
+                                }
 
 
 #endif // DEBUG_MOD
@@ -106,23 +106,29 @@ typedef char* type_array;
 
 enum errors
 {
-    OK = 0,
-    CON_STATUS_OK = 3,
+    OK                   = 0,
+    CON_STATUS_OK        = 3,
     STACK_IS_CONSTURCTED = 4,
-    DES_STATUS_OK = 13,
-    ERROR_OUT_RANGE = 1488,
-    ERROR_FULL_STACK = 1945,
-    ERROR_NULLPTR = 228,
-    ERROR_DOUBLE_CONSTRUCT = 1555,
-    ERROR_DOUBLE_DESTRUCT = 1337,
-    ERROR_WRONG_CAPACITY = 1861,
-    ERROR_WRONG_HASH = 0xF,
+    DES_STATUS_OK        = 13,
+
+    ERROR_OUT_RANGE            = 1488,
+    ERROR_FULL_STACK           = 1945,
+    ERROR_NULLPTR              = 228,
+    ERROR_DOUBLE_CONSTRUCT     = 1555,
+    ERROR_DOUBLE_DESTRUCT      = 1337,
+    ERROR_WRONG_CAPACITY       = 1861,
+    ERROR_WRONG_HASH           = 0xF,
+    ERROR_MEMORY_RESIZE_FAILED = 0xBABADED,
+    ERROR_UNKNOWN              = 0xDEADFAAC,
+
+
     WARNING_SIZE_INC = 666,
     WARNING_SIZE_DEC = 999,
-    LEFT_CANAREA_DEAD = 0xB1EA,
-    RIGHT_CANAREA_DEAD = 0xB2EA,
-    ERROR_MEMORY_RESIZE_FAILED = 0xBABADED,
-    ERROR_UNKNOWN = 0xDEADFAAC
+
+    LEFT_STRUCT_CANAREA_DEAD  = 0xB1EA,
+    RIGHT_STRUCT_CANAREA_DEAD = 0xB2EA,
+    LEFT_STACK_CANAREA_DEAD   = 0xB1EA2,
+    RIGHT_STACK_CANAREA_DEAD  = 0xB2EA2
 };
 
 
@@ -141,7 +147,7 @@ struct pstack_info
     size_t con_status  = CON_STATUS_OK;
     size_t des_status;
     size_t inc_counter = 1;
-    char* name_of_stack;
+    char*  name_of_stack;
 
     long long hash_var;
 
@@ -153,7 +159,7 @@ struct pstack_info
 
 const int Pstack_inc_max = 3;
 
-static const long long Dog = 0x1ABE;
+static const long long Dog = 0x0DED1ABE0DED1ABE;
 
 const int Pstack_multiplier = 3;
 
